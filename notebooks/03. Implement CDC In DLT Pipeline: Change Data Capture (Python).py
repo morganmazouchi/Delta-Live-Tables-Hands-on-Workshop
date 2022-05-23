@@ -5,14 +5,47 @@
 
 # MAGIC %md
 # MAGIC 
-# MAGIC # Implement CDC In DLT Pipeline: Change Data Capture (Python)
+# MAGIC ## Importance of Change Data Capture (CDC)
 # MAGIC 
-# MAGIC -----------------
+# MAGIC Change Data Capture (CDC) is the process that captures the changes in records made to a data storage like Database, Data Warehouse, etc. These changes usually refer to operations like data deletion, addition and updating.
 # MAGIC 
-# MAGIC ###### Resource [Change data capture with Delta Live Tables](https://docs.databricks.com/data-engineering/delta-live-tables/delta-live-tables-cdc.html)
-# MAGIC -----------------
+# MAGIC A straightforward way of Data Replication is to take a Database Dump that will export a Database and import it to a LakeHouse/DataWarehouse/Lake, but this is not a scalable approach. 
+# MAGIC 
+# MAGIC Change Data Capture, only capture the changes made to the Database and apply those changes to the target Database. CDC reduces the overhead, and supports real-time analytics. It enables incremental loading while eliminates the need for bulk load updating.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ### CDC Approaches 
+# MAGIC 
+# MAGIC **1- Develop in-house CDC process:** 
+# MAGIC 
+# MAGIC ***Complex Task:*** CDC Data Replication is not a one-time easy solution. Due to the differences between Database Providers, Varying Record Formats, and the inconvenience of accessing Log Records, CDC is challenging.
+# MAGIC 
+# MAGIC ***Regular Maintainance:*** Writing a CDC process script is only the first step. You need to maintain a customized solution that can map to aformentioned changes regularly. This needs a lot of time and resources.
+# MAGIC 
+# MAGIC ***Overburdening:*** Developers in companies already face the burden of public queries. Additional work for building customizes CDC solution will affect existing revenue-generating projects.
+# MAGIC 
+# MAGIC **2- Using CDC tools** such as Debezium, Hevo Data, IBM Infosphere, Qlik Replicate, Talend, Oracle GoldenGate, StreamSets.
+# MAGIC 
+# MAGIC In this demo repo we are using CDC data coming from a CDC tool. 
+# MAGIC Since a CDC tool is reading database logs:
+# MAGIC We are no longer dependant on developers updating a certain column 
+# MAGIC 
+# MAGIC — A CDC tool like Debezium takes care of capturing every changed row. It records the history of data changes in Kafka logs, from where your application consumes them. 
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ### Implement CDC In DLT Pipeline: Change Data Capture (Python)
+# MAGIC 
 # MAGIC 
 # MAGIC <img src="https://raw.githubusercontent.com/morganmazouchi/Delta-Live-Tables/main/Images/dlt%20end%20to%20end%20flow.png">
+# MAGIC 
+# MAGIC 
+# MAGIC ###### Resource [Change data capture with Delta Live Tables](https://docs.databricks.com/data-engineering/delta-live-tables/delta-live-tables-cdc.html)
 
 # COMMAND ----------
 
@@ -72,40 +105,6 @@ spark.read.json(folder+"/customers").display()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
-# MAGIC ## Importance of Change Data Capture (CDC)
-# MAGIC 
-# MAGIC Change Data Capture (CDC) is the process that captures the changes in records made to a data storage like Database, Data Warehouse, etc. These changes usually refer to operations like data deletion, addition and updating.
-# MAGIC 
-# MAGIC A straightforward way of Data Replication is to take a Database Dump that will export a Database and import it to a LakeHouse/DataWarehouse/Lake, but this is not a scalable approach. 
-# MAGIC 
-# MAGIC Change Data Capture, only capture the changes made to the Database and apply those changes to the target Database. CDC reduces the overhead, and supports real-time analytics. It enables incremental loading while eliminates the need for bulk load updating.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC 
-# MAGIC ### CDC Approaches 
-# MAGIC 
-# MAGIC **1- Develop in-house CDC process:** 
-# MAGIC 
-# MAGIC ***Complex Task:*** CDC Data Replication is not a one-time easy solution. Due to the differences between Database Providers, Varying Record Formats, and the inconvenience of accessing Log Records, CDC is challenging.
-# MAGIC 
-# MAGIC ***Regular Maintainance:*** Writing a CDC process script is only the first step. You need to maintain a customized solution that can map to aformentioned changes regularly. This needs a lot of time and resources.
-# MAGIC 
-# MAGIC ***Overburdening:*** Developers in companies already face the burden of public queries. Additional work for building customizes CDC solution will affect existing revenue-generating projects.
-# MAGIC 
-# MAGIC **2- Using CDC tools** such as Debezium, Hevo Data, IBM Infosphere, Qlik Replicate, Talend, Oracle GoldenGate, StreamSets.
-# MAGIC 
-# MAGIC In this demo repo we are using CDC data coming from a CDC tool. 
-# MAGIC Since a CDC tool is reading database logs:
-# MAGIC We are no longer dependant on developers updating a certain column 
-# MAGIC 
-# MAGIC — A CDC tool like Debezium takes care of capturing every changed row. It records the history of data changes in Kafka logs, from where your application consumes them. 
-
-# COMMAND ----------
-
-# MAGIC %md
 # MAGIC ## How to synchronize your SQL Database with your Lakehouse? 
 # MAGIC CDC flow with a CDC tool, autoloader and DLT pipeline:
 # MAGIC 
@@ -115,7 +114,6 @@ spark.read.json(folder+"/customers").display()
 # MAGIC - Next we can perform APPLY CHANGES INTO on the cleaned Bronze layer table to propagate the most updated data downstream to the Silver Table
 # MAGIC 
 # MAGIC Here is the flow we'll implement, consuming CDC data from an external database. Note that the incoming could be any format, including message queue such as Kafka.
-# MAGIC 
 # MAGIC <img src="https://raw.githubusercontent.com/morganmazouchi/Delta-Live-Tables/main/Images/cdc_flow_new.png" alt='Make all your data ready for BI and ML'/>
 
 # COMMAND ----------
@@ -251,7 +249,7 @@ dlt.create_target_table(name="customer_silver",
 # COMMAND ----------
 
 """
-##APPLY CHANGES INTO the target table
+##APPLY CHANGES the target table
 """
 
 dlt.apply_changes(
@@ -267,4 +265,4 @@ dlt.apply_changes(
 
 # MAGIC %md
 # MAGIC 
-# MAGIC Next step, create DLT pipeline, add a path to this notebook and **add configuration with enabling applychanges to true**. For more detail see notebook "PipelineSettingConfiguration.json". 
+# MAGIC Next step, create DLT pipeline, add a path to this notebook and **add configuration with enabling applychanges to true**. 

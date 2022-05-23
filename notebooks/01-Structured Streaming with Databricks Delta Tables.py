@@ -101,7 +101,7 @@
 # MAGIC   Setup checkpoint directory
 # MAGIC */
 # MAGIC 
-# MAGIC val checkpointDir : String = "/tmp/delta-stream_dltworkshop/3";
+# MAGIC val checkpointDir : String = "/tmp/delta-stream_dltworkshop/7";
 
 # COMMAND ----------
 
@@ -156,7 +156,6 @@
 # MAGIC 
 # MAGIC drop table if exists inventorydata_silver;
 # MAGIC drop table if exists inventorydata_silver_updates;
-# MAGIC drop table if exists inventorydata_gold
 
 # COMMAND ----------
 
@@ -202,7 +201,8 @@
 # MAGIC SELECT Country, avg(UnitPrice) as AVG_unitprice
 # MAGIC FROM inventorydata
 # MAGIC WHERE Quantity >5 
-# MAGIC Group by Country;
+# MAGIC Group by Country
+# MAGIC ORDER by Country DESC, AVG_unitprice ASC;
 
 # COMMAND ----------
 
@@ -213,7 +213,7 @@
 # MAGIC --
 # MAGIC 
 # MAGIC OPTIMIZE inventorydata
-# MAGIC ZORDER BY UnitPrice;
+# MAGIC ZORDER BY Country, UnitPrice;
 
 # COMMAND ----------
 
@@ -226,7 +226,8 @@
 # MAGIC SELECT Country, avg(UnitPrice) as AVG_unitprice
 # MAGIC FROM inventorydata
 # MAGIC WHERE Quantity >5 
-# MAGIC Group by Country;
+# MAGIC Group by Country
+# MAGIC ORDER by Country DESC, AVG_unitprice ASC;
 
 # COMMAND ----------
 
@@ -254,7 +255,7 @@
 # MAGIC Specify a checkpoint directory for writing out a stream
 # MAGIC """
 # MAGIC 
-# MAGIC checkpoint_dir_1 : str = "/tmp/delta-stream_dltworkshop/silver_check_2"
+# MAGIC checkpoint_dir_1 : str = "/tmp/delta-stream_dltworkshop/silver_check_5"
 
 # COMMAND ----------
 
@@ -289,7 +290,7 @@
 # MAGIC Specify a checkpoint directory for writing out a stream
 # MAGIC """
 # MAGIC 
-# MAGIC checkpoint_dir_2 : str = "/tmp/delta-stream_dltworkshop/silverupdate_check_3"
+# MAGIC checkpoint_dir_2 : str = "/tmp/delta-stream_dltworkshop/silverupdate_check_5"
 
 # COMMAND ----------
 
@@ -315,59 +316,3 @@
 # MAGIC %fs
 # MAGIC 
 # MAGIC ls dbfs:/user/hive/warehouse/inventorydata_silver_updates
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### Windowed Aggregation
-
-# COMMAND ----------
-
-# MAGIC %python
-# MAGIC 
-# MAGIC display(df_silver.select("InvoiceDate").na.drop().distinct())
-
-# COMMAND ----------
-
-# MAGIC %python
-# MAGIC 
-# MAGIC from pyspark.sql.functions import window
-# MAGIC 
-# MAGIC """
-# MAGIC Do some real time aggregations with watermarking
-# MAGIC """
-# MAGIC 
-# MAGIC df_gold : DataFrame = df_silver.withWatermark("InvoiceDate", "1 month")\
-# MAGIC                                .groupBy(
-# MAGIC                                     window("InvoiceDate", "10 minutes", "5 minutes"))\
-# MAGIC                                .sum()
-# MAGIC   
-# MAGIC display(df_gold)
-
-# COMMAND ----------
-
-# MAGIC %python
-# MAGIC 
-# MAGIC """
-# MAGIC Specify a checkpoint directory for writing out a stream
-# MAGIC """
-# MAGIC 
-# MAGIC checkpoint_dir_3 : str = "/tmp/delta-stream_dltworkshop/gold_check_3"
-
-# COMMAND ----------
-
-# MAGIC %python
-# MAGIC 
-# MAGIC """
-# MAGIC Fix column names for aggregation
-# MAGIC """
-# MAGIC 
-# MAGIC new_columns = [column.replace("(","_").replace(")", "") for column in df_gold.columns]
-# MAGIC 
-# MAGIC df_gold.toDF(*new_columns)\
-# MAGIC        .writeStream\
-# MAGIC        .format("delta")\
-# MAGIC        .option("mergeSchema", "true")\
-# MAGIC        .option("checkpointLocation", checkpoint_dir_3)\
-# MAGIC        .outputMode("complete")\
-# MAGIC        .table("lending_club_stream_gold")
