@@ -68,7 +68,7 @@
 # MAGIC                                        .option("header", true)
 # MAGIC                                        .schema(file_schema)
 # MAGIC                                        .load("databricks-datasets/online_retail/data-001/*.csv")
-# MAGIC                                        .withColumn("InvoiceDate", to_timestamp($"InvoiceDate", "MMM-yyyy"));                  //parse timestamp
+# MAGIC                                        .withColumn("InvoiceDate", to_timestamp($"InvoiceDate", "MM-yyyy"));                  //parse timestamp
 # MAGIC 
 # MAGIC 
 # MAGIC // See the dataframe
@@ -290,7 +290,7 @@
 # MAGIC Specify a checkpoint directory for writing out a stream
 # MAGIC """
 # MAGIC 
-# MAGIC checkpoint_dir_2 : str = "/tmp/delta-stream_dltworkshop/silverupdate_check_5"
+# MAGIC checkpoint_dir_2 : str = "/tmp/delta-stream_dltworkshop/silverupdate_check_6"
 
 # COMMAND ----------
 
@@ -300,7 +300,8 @@
 # MAGIC Write deduplicated silver streams 
 # MAGIC """
 # MAGIC 
-# MAGIC df_silver.writeStream\
+# MAGIC df_silver.na.drop()\
+# MAGIC          .writeStream\
 # MAGIC          .format("delta")\
 # MAGIC          .option("checkpointLocation", checkpoint_dir_2)\
 # MAGIC          .table("inventorydata_silver_updates")
