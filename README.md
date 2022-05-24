@@ -26,9 +26,7 @@ The workshop consists of 4 interactive sections that are separated by 4 notebook
 |`01-Structured Streaming with Databricks Delta Tables`|Processing and ingesting data at scale utilizing databricks tunables and the medallion architecture|
 |`02-Orchestrating with Delta Live Tables`|Changing Spark Properties, Configuring Table Properties, Optimization of Tables, Combining Batch and Incremental Tables|
 |`03. Implement CDC In DLT Pipeline: Change Data Capture (Python)`|Implementing Change Data Capture in DLT pipelines for accessing to fresh data|
-|`04-04: Meta-programming`|Examples of metaprogramming in DLT
-When to use/problems is solved
-How to configure|
+|`04-04: Meta-programming`|Examples of metaprogramming in DLT When to use/problems is solved How to configure|
 
 
 # Setup / Requirements
