@@ -123,10 +123,10 @@ FROM LIVE.quality_retail;
 CREATE OR REPLACE LIVE TABLE sales_by_day
 AS 
 SELECT
-date_trunc(InvoiceDatetime, 'day') AS Date,
+date_trunc('day',InvoiceDatetime) AS Date,
 SUM(Quantity) AS TotalSales
 FROM (LIVE.retail_sales_all_countries)
-GROUP BY date_trunc(InvoiceDatetime, 'day')
+GROUP BY date_trunc('day',InvoiceDatetime)
 ORDER BY Date;
 
 -- COMMAND ----------
