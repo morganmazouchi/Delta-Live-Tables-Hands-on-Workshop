@@ -2,6 +2,11 @@
 Welcome to the repository for the Databricks 1:M Delta Live Tables Workshop!
 
 This repository contains the notebooks that are used in the workshop to demonstrate the use of Delta Live Tables to build simple, scalable , production-ready pipelines that provides built-in data quality controls and monitoring, data pipeline logging, data lineage tracking, automated pipeline orchestration, automatic Error Handling, advanced auto-scaling, change data capture (CDC) and advanced data engineering concepts (window functions and meta-programming) into a simple pipeline.
+<img width="1279" alt="cdc_flow_new" src="https://user-images.githubusercontent.com/85911675/178178051-820a22ae-4b9b-4394-9754-7b9f245d552a.png">
+
+
+
+![Screen Shot 2022-07-10 at 7 18 23 PM](https://user-images.githubusercontent.com/85911675/178177635-249deecd-9261-4586-8032-565c534b5e9f.png)
 
 
 
@@ -26,7 +31,9 @@ The workshop consists of 4 interactive sections that are separated by 4 notebook
 |`01-Structured Streaming with Databricks Delta Tables`|Processing and ingesting data at scale utilizing databricks tunables and the medallion architecture|
 |`02-Orchestrating with Delta Live Tables`|Changing Spark Properties, Configuring Table Properties, Optimization of Tables, Combining Batch and Incremental Tables|
 |`03. Implement CDC In DLT Pipeline: Change Data Capture (Python)`|Implementing Change Data Capture in DLT pipelines for accessing to fresh data|
-|`04-04: Meta-programming`|Examples of metaprogramming in DLT When to use/problems is solved How to configure|
+|`04: Meta-programming`|Examples of metaprogramming in DLT When to use/problems is solved How to configure|
+|`05: ML Models in DLT Pipelines`|Example of integratation of ML models with DLT pipelines|
+
 
 
 # Setup / Requirements
@@ -35,7 +42,7 @@ This workshop requires a running Databricks workspace. If you are an existing Da
 
 ## DBR Version
 
-The features used in this workshop require `DBR 9.1 LTS`.
+The features used in this workshop require `DBR 9.1 LTS`+.
 
 ## Repos
 
