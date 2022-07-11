@@ -207,10 +207,10 @@ def customer_bronze():
 
 # DBTITLE 1,Silver Layer - Cleansed Table (Impose Constraints)
 """
-##Create a view storing the clean version of the bronze information table 
+##Create a live table storing the clean version of the bronze information table 
 """
 
-@dlt.view(name="customer_bronze_clean_v",
+@dlt.table(name="customer_bronze_clean_v",
   comment="Cleansed bronze customer view (i.e. what will become Silver)")
 
 @dlt.expect_or_drop("valid_id", "id IS NOT NULL")
@@ -218,8 +218,9 @@ def customer_bronze():
 @dlt.expect_or_drop("valid_operation", "operation IS NOT NULL")
 
 def customer_bronze_clean_v():
-  return dlt.read_stream("customer_bronze") \
+  return (dlt.read_stream("customer_bronze")
             .select("address", "email", "id", "firstname", "lastname", "operation", "operation_date", "_rescued_data")
+         )
 
 # COMMAND ----------
 
