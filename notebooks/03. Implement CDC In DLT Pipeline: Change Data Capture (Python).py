@@ -259,7 +259,7 @@ dlt.apply_changes(
   keys = ["id"], #Primary key to match the rows to upsert/delete
   sequence_by = col("operation_date"), #deduplicate by operation date getting the most recent value
   apply_as_deletes = expr("operation = 'DELETE'"), #DELETE condition
-  except_column_list = ["operation", "operation_date", "_rescued_data"] # drop metadata columns
+  except_column_list = ["operation", "operation_date", "_rescued_data"], # drop metadata columns
   stored_as_scd_type = 2
 )
 
