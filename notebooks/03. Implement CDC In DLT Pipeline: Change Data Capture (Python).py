@@ -137,14 +137,15 @@ spark.read.json(folder+"/customers").display()
 
 # MAGIC %md-sandbox
 # MAGIC ### Incremental data loading using Auto Loader (cloud_files)
-# MAGIC <div style="float:right">
-# MAGIC   <img width="700px" src="https://raw.githubusercontent.com/morganmazouchi/Delta-Live-Tables/main/Images/DLT_CDC.png"/>
-# MAGIC </div>
+# MAGIC 
+# MAGIC 
 # MAGIC Working with external system can be challenging due to schema update. The external database can have schema update, adding or modifying columns, and our system must be robust against these changes.
 # MAGIC Databricks Autoloader (`cloudFiles`) handles schema inference and evolution out of the box.
 # MAGIC 
 # MAGIC Autoloader allow us to efficiently ingest millions of files from a cloud storage, and support efficient schema inference and evolution at scale. In this notebook we leverage Autoloader to handle streaming (and batch) data.
-# MAGIC 
+# MAGIC <div style="float:down">
+# MAGIC   <img width="1000px" src="https://user-images.githubusercontent.com/85911675/178177635-249deecd-9261-4586-8032-565c534b5e9f.png"/>
+# MAGIC </div>
 # MAGIC Let's use it to create our pipeline and ingest the raw JSON data being delivered by an external provider. 
 
 # COMMAND ----------
