@@ -15,15 +15,11 @@
 
 # COMMAND ----------
 
-#import dlt
+import dlt
 import mlflow
 from pyspark.sql.functions import struct
 from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
 import os
-
-# COMMAND ----------
-
-import dlt
 
 # COMMAND ----------
 

@@ -107,9 +107,9 @@ display(iot_event_stream)
 ##  Setup checkpoint directory for writing out streaming workloads
 ######
 
-checkpointDir = "/tmp/delta-stream_dltworkshop/14";
-checkpoint_dir_1 = "/tmp/delta-stream_dltworkshop/silver_check_14"
-checkpoint_dir_2 = "/tmp/delta-stream_dltworkshop/gold_check_14"
+checkpointDir = "/tmp/delta-stream_dltworkshop/17";
+checkpoint_dir_1 = "/tmp/delta-stream_dltworkshop/silver_check_17"
+checkpoint_dir_2 = "/tmp/delta-stream_dltworkshop/gold_check_17"
 
 # COMMAND ----------
 
@@ -216,6 +216,11 @@ def updateGold( batch, batchId ):
    .option( "checkpointLocation", checkpoint_dir_2)\
    .table("iot_event_gold")
 )
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * FROM iot_event_gold;
 
 # COMMAND ----------
 

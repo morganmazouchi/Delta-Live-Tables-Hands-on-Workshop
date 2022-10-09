@@ -241,7 +241,7 @@ def customer_bronze_clean_v():
 ##Create the target table 
 """
 
-dlt.create_target_table(name="customer_silver",
+dlt.create_streaming_live_table(name="customer_silver",
   comment="Clean, merged customers",
   table_properties={
     "quality": "silver"

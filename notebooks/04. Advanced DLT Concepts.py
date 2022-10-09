@@ -30,9 +30,7 @@ print(countries_list)
 
 all_tbl_properties = {"quality":"silver",
 "delta.tuneFileSizesForRewrites":"true",
-"pipelines.autoOptimize.managed":"true",
-"pipelines.autoOptimize.zOrderCols":"CustomerID,InvoiceNo",
-"pipelines.trigger.interval":"1 day"
+"pipelines.autoOptimize.zOrderCols":"CustomerID, InvoiceNo"
                      }
 
 expectations_configs = {"has_invoice_number":"CAST(InvoiceNo AS INTEGER) IS NOT NULL","has_customer_number":"CAST(CustomerID AS INTEGER) IS NOT NULL"}
@@ -49,7 +47,8 @@ def generate_bronze_tables(call_table, filter):
   @dlt.table(
     name=call_table,
     comment=f"Bronze Table {call_table} By for Country: {filter}",
-    table_properties=all_tbl_properties
+    table_properties=all_tbl_properties,
+    spark_conf={"pipelines.trigger.interval" : "1 day"}
   )
   def create_call_table():
     
@@ -76,16 +75,14 @@ def generate_silver_tables(target_table, source_table, merge_keys, sequence_key)
   zorder_str = ",".join(merge_keys)
   
   ### Dynamically config target tables as little or as much as you want
-  dlt.create_target_table(
+  dlt.create_streaming_live_table(
   name = target_table,
   comment = "Silver Table",
-  #spark_conf={"<key>" : "<value", "<key" : "<value>"},
+  spark_conf={"pipelines.trigger.interval" : "1 hour"},
   table_properties= {"quality":"silver",
                      "delta.autoOptimize.optimizeWrite":"true",
                      "delta.tuneFileSizesForRewrites":"true",
-                     "pipelines.autoOptimize.managed":"true",
-                     "pipelines.autoOptimize.zOrderCols":zorder_str,
-                     "pipelines.trigger.interval":"1 hour"}
+                     "pipelines.autoOptimize.zOrderCols":zorder_str}
   #partition_cols=["<partition-column>", "<partition-column>"],
   #path="<storage-location-path>",
   #schema="schema-definition"
@@ -112,7 +109,7 @@ for country in countries_list:
   clean_name = country.replace(" ","_")
   source_table_name = "sales_for_" + clean_name + "_bronze"
   target_table_name = "sales_for_" + clean_name + "_silver"
-  merge_keys = ["InvoiceNo","CustomerID"]
+  merge_keys = ["InvoiceNo", "CustomerID"]
   sequence_key = "InvoiceDatetime"
   generate_silver_tables(target_table = target_table_name, 
                          source_table = source_table_name, 
