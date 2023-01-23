@@ -88,7 +88,7 @@ def generate_silver_tables(target_table, source_table, merge_keys, sequence_key)
   #schema="schema-definition"
   )
     
-  ### Run Merge -- This includes CDC Data -- SCD Type 2 change coming soon
+  ### Run Merge -- This includes CDC Data 
   dlt.apply_changes(
     target = target_table,
     source = source_table,

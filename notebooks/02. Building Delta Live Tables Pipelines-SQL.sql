@@ -17,7 +17,7 @@ AS (
 -- COMMAND ----------
 
 -- DBTITLE 1,Optimize Data Layout for Performance
-SET pipelines.trigger.interval='1 hour';
+-- SET pipelines.trigger.interval='1 hour';
 
 CREATE STREAMING LIVE TABLE cleaned_retail
 PARTITIONED BY (Country)
@@ -34,7 +34,7 @@ TBLPROPERTIES --Can be spark, delta, or DLT confs
 -- COMMAND ----------
 
 -- DBTITLE 1,Perform ETL & Enforce Quality Expectations
-SET pipelines.trigger.interval='1 hour';
+-- SET pipelines.trigger.interval='1 hour';
 
 CREATE STREAMING LIVE TABLE quality_retail
 (
@@ -86,7 +86,7 @@ TBLPROPERTIES
 -- COMMAND ----------
 
 -- DBTITLE 1,Quarantine Data with Expectations
-SET pipelines.trigger.interval='1 hour';
+-- SET pipelines.trigger.interval='1 hour';
 
 CREATE STREAMING LIVE TABLE quarantined_retail
 (
@@ -113,7 +113,7 @@ FROM STREAM(LIVE.cleaned_retail);
 -- COMMAND ----------
 
 -- DBTITLE 1,Create Complete Tables -- Use Case #1 --  for metadata downstream
-CREATE OR REPLACE LIVE TABLE distinct_countries_retail
+CREATE OR REFRESH LIVE TABLE distinct_countries_retail
 AS
 SELECT DISTINCT Country
 FROM LIVE.quality_retail;
@@ -121,7 +121,7 @@ FROM LIVE.quality_retail;
 -- COMMAND ----------
 
 -- DBTITLE 1,Create Complete Tables -- Summary Analytics
-CREATE OR REPLACE LIVE TABLE sales_by_day
+CREATE OR REFRESH LIVE TABLE sales_by_day
 AS 
 SELECT
 date_trunc('day', InvoiceDatetime) AS Date,
@@ -132,7 +132,7 @@ ORDER BY Date;
 
 -- COMMAND ----------
 
-CREATE OR REPLACE LIVE TABLE sales_by_country
+CREATE OR REFRESH LIVE TABLE sales_by_country
 AS 
 SELECT
 Country,
@@ -143,7 +143,8 @@ ORDER BY TotalSales DESC;
 
 -- COMMAND ----------
 
-CREATE OR REPLACE LIVE TABLE top_ten_customers
+-- SET pipelines.trigger.interval='1 hour';
+CREATE OR REFRESH LIVE TABLE top_ten_customers
 AS 
 SELECT
 CustomerID,
@@ -156,7 +157,7 @@ LIMIT 10;
 -- COMMAND ----------
 
 -- DBTITLE 1,Upsert New Data APPLY CHANGES INTO
-SET pipelines.trigger.interval='1 hour';
+-- SET pipelines.trigger.interval='1 hour';
 
 CREATE STREAMING LIVE TABLE retail_sales_all_countries
 TBLPROPERTIES 
@@ -173,7 +174,7 @@ SEQUENCE BY InvoiceDateTime
 -- COMMAND ----------
 
 -- DBTITLE 1,Just for Visuals -- Separate pipeline to split by country
-SET pipelines.trigger.interval='1 hour';
+-- SET pipelines.trigger.interval='1 hour';
 
 CREATE STREAMING LIVE TABLE quality_retail_split_by_country
 (
