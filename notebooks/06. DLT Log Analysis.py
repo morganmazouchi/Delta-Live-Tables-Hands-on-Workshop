@@ -8,18 +8,24 @@
 
 # COMMAND ----------
 
+# Full username, e.g. "<first>.<last>@databricks.com"
+username = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
+
+# Short form of username, suitable for use as part of a topic name.
+user = username.split("@")[0].replace(".","_")
+
+storage_location = f"/tmp/delta-stream-dltworkshop/{user}/dlt_storage"
+
+# COMMAND ----------
+
 dbutils.widgets.removeAll()
-dbutils.widgets.text('storage_location', '/dlt/storage')
+dbutils.widgets.text('storage_location', storage_location)
 dbutils.widgets.text('latest_update_id', 'Update_ID_fromUpdateDetails')
 
 # COMMAND ----------
 
 # DBTITLE 1,Find the Metrics Table in DBFS
 display(dbutils.fs.ls(dbutils.widgets.get('storage_location')))
-
-# COMMAND ----------
-
-# MAGIC %fs ls "dbfs:/user/hive/"
 
 # COMMAND ----------
 

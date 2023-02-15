@@ -70,6 +70,21 @@ display(iot_event_stream)
 
 # COMMAND ----------
 
+# DBTITLE 1,Housekeeping to make this idempotent
+# Full username, e.g. "<first>.<last>@databricks.com"
+username = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
+
+# Short form of username, suitable for use as part of a topic name.
+user = username.split("@")[0].replace(".","_")
+
+# Database name
+dbName = user+"_workshop_db"
+
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {dbName}")
+spark.sql(f"USE {dbName}")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC 
 # MAGIC # Medallion Architecture
@@ -107,9 +122,9 @@ display(iot_event_stream)
 ##  Setup checkpoint directory for writing out streaming workloads
 ######
 
-checkpointDir = "/tmp/delta-stream_dltworkshop/17";
-checkpoint_dir_1 = "/tmp/delta-stream_dltworkshop/silver_check_17"
-checkpoint_dir_2 = "/tmp/delta-stream_dltworkshop/gold_check_17"
+checkpoint_dir_bronze = f"/tmp/delta-stream-dltworkshop/{user}/bronze_check";
+checkpoint_dir_silver = f"/tmp/delta-stream-dltworkshop/{user}/silver_check"
+checkpoint_dir_gold = f"/tmp/delta-stream-dltworkshop/{user}/gold_check"
 
 # COMMAND ----------
 
@@ -118,11 +133,14 @@ checkpoint_dir_2 = "/tmp/delta-stream_dltworkshop/gold_check_17"
 
 # COMMAND ----------
 
+# Clear checkpoint location (for IDEMPOTENCY)
+dbutils.fs.rm(checkpoint_dir_bronze, True)
+
 iot_stream = iot_event_stream.writeStream\
                              .format("delta")\
                              .outputMode("append")\
                              .option("header", True)\
-                             .option("checkpointLocation", checkpointDir)\
+                             .option("checkpointLocation", checkpoint_dir_bronze)\
                              .trigger(processingTime='10 seconds')\
                              .table("iot_event_bronze")
 
@@ -134,9 +152,8 @@ iot_stream = iot_event_stream.writeStream\
 
 # COMMAND ----------
 
-# MAGIC %fs
-# MAGIC 
-# MAGIC ls dbfs:/user/hive/warehouse/iot_event_bronze
+# DBTITLE 1,Take a peak at delta lake files created
+display(dbutils.fs.ls(f"/user/hive/warehouse/{dbName}.db/iot_event_bronze"))
 
 # COMMAND ----------
 
@@ -157,17 +174,19 @@ iot_stream = iot_event_stream.writeStream\
 Deduplicate Bronze level data
 """
 
+# Clear checkpoint location (for IDEMPOTENCY)
+dbutils.fs.rm(checkpoint_dir_silver, True)
 
 # Drop terribly out-of-order events
-bronzeClean = iot_event_stream.withWatermark( "timestamp", "1 day" )
+bronzeCleanDF = iot_event_stream.withWatermark( "timestamp", "1 day" )
 
 # Drop bad events
-bronzeClean = bronzeClean.dropna()
+bronzeCleanDF = bronzeClean.dropna()
 
-silverStream = bronzeClean.writeStream\
+silverStream = bronzeCleanDF.writeStream\
             .format("delta")\
             .outputMode("append")\
-            .option( "checkpointLocation", checkpoint_dir_1)\
+            .option( "checkpointLocation", checkpoint_dir_silver)\
             .trigger(processingTime='10 seconds')\
             .table("iot_event_silver")
 silverStream
@@ -177,12 +196,6 @@ silverStream
 # MAGIC %sql
 # MAGIC 
 # MAGIC DESCRIBE EXTENDED iot_event_silver;
-
-# COMMAND ----------
-
-# MAGIC %fs
-# MAGIC 
-# MAGIC ls dbfs:/user/hive/warehouse/iot_event_silver
 
 # COMMAND ----------
 
@@ -197,23 +210,26 @@ silverStream
 
 # COMMAND ----------
 
-silver_stream = spark.readStream.option( "maxFilesPerTrigger", 1 ).format( "delta" ).table("iot_event_silver")
+silver_streamDF = spark.readStream.option( "maxFilesPerTrigger", 1 ).format( "delta" ).table("iot_event_silver")
 
-def updateGold( batch, batchId ):
-  ( gold.alias("gold")
-        .merge( batch.alias("batch"),
-                "gold.date = batch.date AND gold.miles_walked = batch.miles_walked"
-              )
-        .whenMatchedUpdateAll()
-        .whenNotMatchedInsertAll()
-        .execute()
-  )
+# Clear checkpoint location (for IDEMPOTENCY)
+dbutils.fs.rm(checkpoint_dir_gold, True)
 
-( (silver_stream.withWatermark("timestamp", "1 hour").groupBy("gender").agg(avg("weight").alias("avg_weight")))
+# def updateGold( batch, batchId ):
+#   ( gold.alias("gold")
+#         .merge( batch.alias("batch"),
+#                 "gold.date = batch.date AND gold.miles_walked = batch.miles_walked"
+#               )
+#         .whenMatchedUpdateAll()
+#         .whenNotMatchedInsertAll()
+#         .execute()
+#   )
+
+( (silver_streamDF.withWatermark("timestamp", "1 hour").groupBy("gender").agg(avg("weight").alias("avg_weight")))
    .writeStream
    .trigger(processingTime='12 seconds')
    .outputMode("complete")\
-   .option( "checkpointLocation", checkpoint_dir_2)\
+   .option( "checkpointLocation", checkpoint_dir_gold)\
    .table("iot_event_gold")
 )
 
@@ -283,3 +299,13 @@ def updateGold( batch, batchId ):
 # MAGIC FROM iot_event_silver
 # MAGIC Group by gender
 # MAGIC ORDER by gender DESC, AVG_weight ASC;
+
+# COMMAND ----------
+
+# DBTITLE 1,Stop all streams
+for s in spark.streams.active:
+  s.stop()
+
+# COMMAND ----------
+
+

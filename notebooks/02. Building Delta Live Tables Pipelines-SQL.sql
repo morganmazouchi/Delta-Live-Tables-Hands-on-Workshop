@@ -1,4 +1,11 @@
 -- Databricks notebook source
+-- MAGIC %md
+-- MAGIC When creating the pipeline add the following configuration to point to the data source:
+-- MAGIC 
+-- MAGIC `data_source_path` : `/databricks-datasets/online_retail/data-001/`
+
+-- COMMAND ----------
+
 -- DBTITLE 1,Read in Raw Data via Autoloader in SQL
 CREATE STREAMING LIVE TABLE raw_retail
 COMMENT "This is the RAW bronze input data read in with Autoloader - no optimizations or expectations"

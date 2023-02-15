@@ -14,6 +14,11 @@ from pyspark.sql.types import *
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC SELECT * FROM dlt_workshop_retail.distinct_countries_retail
+
+# COMMAND ----------
+
 # DBTITLE 1,Load Configs From Table or Files
 ## Loading Distinct Countries from DLT Table that is automatically managed and kept up to date
 
