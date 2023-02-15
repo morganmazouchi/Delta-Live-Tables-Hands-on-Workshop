@@ -44,6 +44,10 @@ file_schema = (spark
 
 # COMMAND ----------
 
+print(file_schema)
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC 
 # MAGIC ## Spark Structured Streaming                                                   
@@ -153,7 +157,7 @@ iot_stream = iot_event_stream.writeStream\
 # COMMAND ----------
 
 # DBTITLE 1,Take a peak at delta lake files created
-display(dbutils.fs.ls(f"/user/hive/warehouse/{dbName}.db/iot_event_bronze"))
+display(dbutils.fs.ls(f"/user/hive/warehouse/{dbName}.db/iot_event_bronze/"))
 
 # COMMAND ----------
 
@@ -181,7 +185,7 @@ dbutils.fs.rm(checkpoint_dir_silver, True)
 bronzeCleanDF = iot_event_stream.withWatermark( "timestamp", "1 day" )
 
 # Drop bad events
-bronzeCleanDF = bronzeClean.dropna()
+bronzeCleanDF = bronzeCleanDF.dropna()
 
 silverStream = bronzeCleanDF.writeStream\
             .format("delta")\
@@ -190,12 +194,6 @@ silverStream = bronzeCleanDF.writeStream\
             .trigger(processingTime='10 seconds')\
             .table("iot_event_silver")
 silverStream
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC 
-# MAGIC DESCRIBE EXTENDED iot_event_silver;
 
 # COMMAND ----------
 
