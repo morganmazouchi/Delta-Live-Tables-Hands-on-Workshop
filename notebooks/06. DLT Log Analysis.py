@@ -14,6 +14,9 @@ username = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tag
 # Short form of username, suitable for use as part of a topic name.
 user = username.split("@")[0].replace(".","_")
 
+# Database name
+dbName = user+"_workshop_db"
+
 storage_location = f"/tmp/delta-stream-dltworkshop/{user}/dlt_storage"
 
 # COMMAND ----------
@@ -24,20 +27,29 @@ dbutils.widgets.text('latest_update_id', 'Update_ID_fromUpdateDetails')
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC Set correct `Update ID` and storage location
+
+# COMMAND ----------
+
+events_table_location = f"{dbutils.widgets.get('storage_location')}/system/events" #dbfs:/storage_location/system/events/
+latest_updateID = dbutils.widgets.get('latest_update_id')
+
+# COMMAND ----------
+
 # DBTITLE 1,Find the Metrics Table in DBFS
-display(dbutils.fs.ls(dbutils.widgets.get('storage_location')))
+display(dbutils.fs.ls(events_table_location))
 
 # COMMAND ----------
 
 # DBTITLE 1,Write the Metrics Table to our DLT Database
-df = spark.read.load(dbutils.widgets.get('storage_location'))  #dbfs:/pipelines/5b2ef462-558e-4f8d-8ad8-c80bce9da954/system/events/
-df.write.mode("overwrite").saveAsTable("dlt_workshop_retail.metrics_table")
+df = spark.read.load(events_table_location)
+df.write.mode("overwrite").saveAsTable(f"{dbName}.metrics_table")
 display(df)
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC USE DATABASE dlt_workshop_retail
+spark.sql(f"USE {dbName}")
 
 # COMMAND ----------
 
@@ -171,3 +183,7 @@ display(df)
 # MAGIC FROM   dlt_workshop_retail.dlt_lineage
 # MAGIC WHERE  Date(timestamp) = "2022-12-09"
 # MAGIC        AND flow_type = "incremental" 
+
+# COMMAND ----------
+
+

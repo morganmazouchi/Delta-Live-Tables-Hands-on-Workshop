@@ -1,4 +1,15 @@
 # Databricks notebook source
+# MAGIC %pip install Faker
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC **When creating the pipeline add the following configuration to point to the data source:**
+# MAGIC 
+# MAGIC `source` : `/tmp/delta-stream-dltworkshop/{your_user_name}/cdc_raw`
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC 
 # MAGIC ## Importance of Change Data Capture (CDC)
@@ -51,10 +62,6 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install Faker
-
-# COMMAND ----------
-
 # Full username, e.g. "<first>.<last>@databricks.com"
 username = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
 
@@ -69,7 +76,7 @@ from collections import OrderedDict
 import uuid
 
 folder = f"/tmp/delta-stream-dltworkshop/{user}/cdc_raw"
-dbutils.fs.rm(folder, True) # For Idempotency
+# dbutils.fs.rm(folder, True) # For Idempotency
 
 try:
   dbutils.fs.ls(folder)
