@@ -4,6 +4,13 @@
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC **When creating the pipeline add the following configuration to point to the data source:**
+# MAGIC 
+# MAGIC `source` : `/tmp/delta-stream-dltworkshop/{your_user_name}/cdc_raw`
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC 
 # MAGIC ## Importance of Change Data Capture (CDC)
 # MAGIC 
@@ -55,13 +62,22 @@
 
 # COMMAND ----------
 
+# Full username, e.g. "<first>.<last>@databricks.com"
+username = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
+
+# Short form of username, suitable for use as part of a topic name.
+user = username.split("@")[0].replace(".","_")
+
+# COMMAND ----------
+
 from pyspark.sql import functions as F
 from faker import Faker
 from collections import OrderedDict 
 import uuid
 
-folder = "/tmp/demo/cdc_raw"
-#dbutils.fs.rm(folder, True)
+folder = f"/tmp/delta-stream-dltworkshop/{user}/cdc_raw"
+# dbutils.fs.rm(folder, True) # For Idempotency
+
 try:
   dbutils.fs.ls(folder)
 except:

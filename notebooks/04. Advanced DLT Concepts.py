@@ -1,7 +1,28 @@
 # Databricks notebook source
 # MAGIC %md
+# MAGIC When creating the pipeline:
+# MAGIC * add the following configuration to point to the data source `data_source_path` : `/databricks-datasets/online_retail/data-001/`
+# MAGIC * add notebook number 2 (`02. Building Delta Live Tables Pipelines-SQL`) to the notebook Paths
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC 
 # MAGIC ## Making pipelines Configure-less-code with DLT
+
+# COMMAND ----------
+
+# Full username, e.g. "<first>.<last>@databricks.com"
+username = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
+
+# Short form of username, suitable for use as part of a topic name.
+user = username.split("@")[0].replace(".","_")
+
+# Database name
+dbName = user+"_workshop_db"
+
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {dbName}")
+spark.sql(f"USE {dbName}")
 
 # COMMAND ----------
 
@@ -11,6 +32,11 @@ import dlt
 
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * FROM distinct_countries_retail
 
 # COMMAND ----------
 
@@ -25,7 +51,7 @@ from pyspark.sql.types import *
 # 5. SQL Expressions/Full logic
 
 ## Get all countries you want to make a separate table for -- then you can create DBSQL Dashboards, and share these tables
-countries_list = [i[0] for i in spark.table("dlt_workshop_retail.distinct_countries_retail").select("Country").coalesce(1).collect()]
+countries_list = [i[0] for i in spark.table(f"{dbName}.distinct_countries_retail").select("Country").coalesce(1).collect()]
 print(countries_list)
 
 all_tbl_properties = {"quality":"silver",
