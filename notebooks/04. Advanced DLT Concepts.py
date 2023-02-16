@@ -2,6 +2,7 @@
 # MAGIC %md
 # MAGIC When creating the pipeline:
 # MAGIC * add the following configuration to point to the data source `data_source_path` : `/databricks-datasets/online_retail/data-001/`
+# MAGIC * add the following configuration to read the country list from the correct schema/db : `dbName`: `username_workshop_db`
 # MAGIC * add notebook number 2 (`02. Building Delta Live Tables Pipelines-SQL`) to the notebook Paths
 
 # COMMAND ----------
@@ -12,31 +13,12 @@
 
 # COMMAND ----------
 
-# Full username, e.g. "<first>.<last>@databricks.com"
-username = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
-
-# Short form of username, suitable for use as part of a topic name.
-user = username.split("@")[0].replace(".","_")
-
-# Database name
-dbName = user+"_workshop_db"
-
-spark.sql(f"CREATE SCHEMA IF NOT EXISTS {dbName}")
-spark.sql(f"USE {dbName}")
-
-# COMMAND ----------
-
 import dlt
 
 # COMMAND ----------
 
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC SELECT * FROM distinct_countries_retail
 
 # COMMAND ----------
 
@@ -50,14 +32,17 @@ from pyspark.sql.types import *
 # 4. Table definitions
 # 5. SQL Expressions/Full logic
 
+dbName = spark.conf.get("dbName")
+
 ## Get all countries you want to make a separate table for -- then you can create DBSQL Dashboards, and share these tables
 countries_list = [i[0] for i in spark.table(f"{dbName}.distinct_countries_retail").select("Country").coalesce(1).collect()]
 print(countries_list)
 
-all_tbl_properties = {"quality":"silver",
-"delta.tuneFileSizesForRewrites":"true",
-"pipelines.autoOptimize.zOrderCols":"CustomerID, InvoiceNo"
-                     }
+all_tbl_properties = {
+  "quality":"silver",
+  "delta.tuneFileSizesForRewrites":"true",
+  "pipelines.autoOptimize.zOrderCols":"CustomerID, InvoiceNo"
+}
 
 expectations_configs = {"has_invoice_number":"CAST(InvoiceNo AS INTEGER) IS NOT NULL","has_customer_number":"CAST(CustomerID AS INTEGER) IS NOT NULL"}
 
