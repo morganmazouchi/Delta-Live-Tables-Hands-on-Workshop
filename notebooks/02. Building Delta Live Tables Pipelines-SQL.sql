@@ -14,7 +14,7 @@ TBLPROPERTIES ("quality" = "bronze")
 AS (
       SELECT
       *,
-      input_file_name() AS inputFileName
+      _metadata.file_path AS inputFileName
       FROM cloud_files( '${data_source_path}', 'csv', 
             map("schema", "InvoiceNo STRING, StockCode STRING, Description STRING, Quantity FLOAT, InvoiceDate STRING, UnitPrice FLOAT, CustomerID STRING, Country STRING",  
             "header", "true"))
